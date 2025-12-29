@@ -117,6 +117,13 @@ function Ensure-Kind-Cluster() {
   }
 }
 
+function Build-Images() {
+  Write-Host "Building Docker images..."
+
+  docker build -t $API_IMAGE ./api | Out-Host
+  docker build -t $CLIENT_IMAGE ./client | Out-Host
+}
+
 function Load-Images() {
   Write-Host "Loading Docker images into kind cluster..."
   kind load docker-image $API_IMAGE --name $CLUSTER_NAME | Out-Host
@@ -179,6 +186,7 @@ function Print-Next-Steps() {
 function Action-Up() {
   Check-Prerequisites
   Ensure-Kind-Cluster
+  Build-Images
   Load-Images
   Apply-K8s
   Wait-For-Pods
