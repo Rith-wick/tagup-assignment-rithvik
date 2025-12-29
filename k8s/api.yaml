@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fleet-api
+  namespace: fleet
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fleet-api
+  template:
+    metadata:
+      labels:
+        app: fleet-api
+    spec:
+      containers:
+        - name: api
+          image: fleet-api:1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          env:
+            - name: DB_HOST
+              value: postgres
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_NAME
+              value: fleetdb
+            - name: DB_USER
+              value: fleetuser
+            - name: DB_PASSWORD
+              value: fleetpass
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fleet-api
+  namespace: fleet
+spec:
+  selector:
+    app: fleet-api
+  ports:
+    - port: 8000
+      targetPort: 8000

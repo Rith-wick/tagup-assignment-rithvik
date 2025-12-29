@@ -1,0 +1,63 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init
+  namespace: fleet
+data:
+  init.sql: |
+    -- db/init.sql
+    -- Stores periodic telemetry readings for fleet assets (defense simulation).
+
+    CREATE TABLE IF NOT EXISTS asset_telemetry (
+      id SERIAL PRIMARY KEY,
+      asset_id TEXT NOT NULL,
+      temperature_c DOUBLE PRECISION NOT NULL,
+      vibration_rms DOUBLE PRECISION NOT NULL,
+      pressure_psi DOUBLE PRECISION NOT NULL,
+      recorded_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_asset_telemetry_asset_time
+    ON asset_telemetry (asset_id, recorded_at DESC);
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: postgres
+  namespace: fleet
+  labels:
+    app: postgres
+spec:
+  containers:
+    - name: postgres
+      image: postgres:16
+      ports:
+        - containerPort: 5432
+      env:
+        - name: POSTGRES_DB
+          value: fleetdb
+        - name: POSTGRES_USER
+          value: fleetuser
+        - name: POSTGRES_PASSWORD
+          value: fleetpass
+      volumeMounts:
+        - name: init-sql
+          mountPath: /docker-entrypoint-initdb.d
+  volumes:
+    - name: init-sql
+      configMap:
+        name: postgres-init
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: fleet
+spec:
+  selector:
+    app: postgres
+  ports:
+    - port: 5432
+      targetPort: 5432

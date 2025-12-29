@@ -1,0 +1,32 @@
+.PHONY: up port-forward logs psql down reset nuke help
+
+help:
+	@echo "Targets:"
+	@echo "  make up           - deploy everything"
+	@echo "  make port-forward - port-forward API and open /docs"
+	@echo "  make logs         - tail client logs"
+	@echo "  make psql         - open psql in postgres pod"
+	@echo "  make down         - stop client only"
+	@echo "  make reset        - wipe app + DB (PVC)"
+	@echo "  make nuke         - delete kind cluster"
+
+up:
+	@./run.sh
+
+port-forward:
+	@./run.sh -PortForward
+
+logs:
+	@./run.sh -Logs
+
+psql:
+	@./run.sh -Psql
+
+down:
+	@./run.sh -Down
+
+reset:
+	@./run.sh -Reset
+
+nuke:
+	@./run.sh -Nuke

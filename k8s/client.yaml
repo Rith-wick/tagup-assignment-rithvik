@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: fleet-client
+  namespace: fleet
+  labels:
+    app: fleet-client
+spec:
+  restartPolicy: Always
+  containers:
+    - name: client
+      image: fleet-client:1.0
+      imagePullPolicy: IfNotPresent
+      env:
+        - name: API_BASE
+          value: "http://fleet-api:8000"
+        - name: ASSET_ID
+          value: "aircraft-C130-017"
+        - name: INTERVAL_SECONDS
+          value: "10"
