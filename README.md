@@ -183,12 +183,25 @@ make down
 If needed, everything can be run manually:
 
 ```bash
+# 1) Build images locally
+docker build -t fleet-api:1.0 ./api
+docker build -t fleet-client:1.0 ./client
+
+# 2) Create cluster
 kind create cluster --name tagup
+
+# 3) Load images into kind
+kind load docker-image fleet-api:1.0 --name tagup
+kind load docker-image fleet-client:1.0 --name tagup
+
+# 4) Deploy manifests
 kubectl apply -f k8s/namespace.yaml
 kubectl apply -f k8s/postgres.yaml -n fleet
 kubectl apply -f k8s/api.yaml -n fleet
 kubectl apply -f k8s/client.yaml -n fleet
-kubectl wait --for=condition=Ready pod --all -n fleet
+
+# 5) Wait for readiness
+kubectl wait --for=condition=Ready pod --all -n fleet --timeout=180s
 ```
 
 Port-forward API:
@@ -198,7 +211,7 @@ kubectl port-forward -n fleet svc/fleet-api 8000:8000
 
 Tail client logs:
 ```bash
-kubectl logs -n fleet -f deployment/fleet-client
+kubectl logs -n fleet -f pod/fleet-client
 ```
 
 ---
